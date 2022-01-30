@@ -1,0 +1,15 @@
+.card {
+    margin: 1rem;
+    padding: 1rem;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    /* width: clamp(200px, 300px, 400px); */
+    min-width: 200px;
+    max-width: 400px;
+    flex-grow: 1;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
