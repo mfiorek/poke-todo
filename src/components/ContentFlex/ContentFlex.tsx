@@ -1,9 +1,7 @@
 import React from "react";
 import styles from './ContentFlex.module.css';
 
-type Props = {}
-
-const ContentFlex: React.FC<Props> = ({children}) => {
+const ContentFlex: React.FC = ({children}) => {
   return (
     <div className={styles.contentFlex}>
       {children}
