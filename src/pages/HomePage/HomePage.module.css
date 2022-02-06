@@ -4,3 +4,16 @@
     margin: 1rem;
     text-align: center;
 }
+
+.logoutButton {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    margin-top: 2rem;
+    border-radius: 0.5rem;
+    border: none;
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 500;
+    background-color: rgb(210, 50, 50);
+    cursor: pointer;
+}

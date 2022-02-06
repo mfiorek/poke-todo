@@ -12,8 +12,21 @@ const LoginPage: React.FC = () => {
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoaing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = () => {
+    const email = emailRef.current?.value;
+    const password = passwordRef.current?.value;
+    setErrorMessage('');
+
+    if (!email) {
+      setErrorMessage('Please provide Email');
+      return;
+    }
+    if (!password) {
+      setErrorMessage('Please provide Password');
+      return;
+    }
     if (emailRef.current?.value && passwordRef.current?.value) {
       setLoaing(true);
       login(emailRef.current?.value, passwordRef.current?.value)
@@ -21,8 +34,7 @@ const LoginPage: React.FC = () => {
           navigate('/');
         })
         .catch((err) => {
-          // TODO implemet error message for the user
-          console.log(err.message);
+          setErrorMessage(err.message);
           setLoaing(false);
         });
     }
@@ -32,6 +44,7 @@ const LoginPage: React.FC = () => {
     <CenterCenter isColumn>
       <Card title='Login'>
         <CenterCenter isColumn>
+          {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
           <form className={styles.form}>
             <label htmlFor='email'>Email</label>
             <input id='email' type='email' ref={emailRef} className={styles.formInput} />
