@@ -1,44 +1,47 @@
 import React, { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { database } from '../../firebase';
-import styles from './SignupPage.module.css';
 import { useAuth } from '../../Contexts/AuthContext';
 import Card from '../../components/Card/Card';
-import CenterCenter from '../../components/CenterCenter/CenterCenter';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
+import FormInput from '../../components/FormInput/FormInput';
 
 const SignupPage: React.FC = () => {
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const nameRef = useRef<HTMLInputElement | null>(null);
-  const emailRef = useRef<HTMLInputElement | null>(null);
-  const passwordRef = useRef<HTMLInputElement | null>(null);
-  const passwordConfirmRef = useRef<HTMLInputElement | null>(null);
-  const [loading, setLoaing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  
+  const [name, setName] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [passwordConfirmError, setPasswordConfirmError] = useState('');
+  const [generalError, setGeneralError] = useState('');
 
-  const handleSignup = () => {
-    const name = nameRef.current?.value;
-    const email = emailRef.current?.value;
-    const password = passwordRef.current?.value;
-    const passwordConfirm = passwordConfirmRef.current?.value;
-    setErrorMessage('');
+  const [loading, setLoaing] = useState(false);
+
+  const handleSignup = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    setNameError('');
+    setEmailError('');
+    setPasswordError('');
+    setPasswordConfirmError('');
+    setGeneralError('');
 
     if (!name) {
-      setErrorMessage('Please provide Game Name');
-      return;
+      setNameError('Please provide Game Name');
     }
     if (!email) {
-      setErrorMessage('Please provide Email');
-      return;
+      setEmailError('Please provide Email');
     }
     if (!password) {
-      setErrorMessage('Please provide Password');
-      return;
+      setPasswordError('Please provide Password');
     }
     if (password !== passwordConfirm) {
-      setErrorMessage('Passwords do not match');
-      return;
+      setPasswordConfirmError('Passwords do not match');
     }
     if (name && email && password && passwordConfirm === password) {
       setLoaing(true);
@@ -51,36 +54,31 @@ const SignupPage: React.FC = () => {
           navigate('/');
         })
         .catch((err) => {
-          setErrorMessage(err.message);
+          setGeneralError(err.message);
           setLoaing(false);
         });
     }
   };
 
   return (
-    <CenterCenter isColumn>
-      <Card title='Signup'>
-        <CenterCenter isColumn>
-          {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
-          <form className={styles.form}>
-            <label htmlFor='name'>Game name</label>
-            <input id='name' ref={nameRef} className={styles.formInput} />
-            <label htmlFor='email'>Email</label>
-            <input id='email' type='email' ref={emailRef} className={styles.formInput} />
-            <label htmlFor='password'>Password</label>
-            <input id='password' type='password' ref={passwordRef} className={styles.formInput} />
-            <label htmlFor='passwordConfirm'>Password Confirmation</label>
-            <input id='passwordConfirm' type='password' ref={passwordConfirmRef} className={styles.formInput} />
-          </form>
-          <button onClick={handleSignup} disabled={loading} className={styles.button}>
+    <div className='flex flex-col justify-center items-center h-full'>
+    <Card title='Signup' className='w-5/6 md:w-1/2 lg:w-1/3 xl:w-1/4'>
+        {generalError && <div className='my-1 px-2 py-3 border border-red-800 bg-red-200 rounded-md text-red-800'>{generalError}</div>}
+        <form onSubmit={handleSignup}>
+          <FormInput value={name} onChange={setName} type='text' errorMessage={nameError} placeholder='Game name' />
+          <FormInput value={email} onChange={setEmail} type='email' errorMessage={emailError} placeholder='Email' />
+          <FormInput value={password} onChange={setPassword} type='password' errorMessage={passwordError} placeholder='Password' />
+          <FormInput value={passwordConfirm} onChange={setPasswordConfirm} type='password' errorMessage={passwordConfirmError} placeholder='Confirm Password' />
+
+          <button type='submit' disabled={loading} className='p-2 text-xl border rounded-md border-green-800 bg-green-700 w-full text-white'>
             Sign up!
           </button>
-        </CenterCenter>
+        </form>
       </Card>
       <div>
         Already have an account? <Link to='/login'>Log In</Link>
       </div>
-    </CenterCenter>
+    </div>
   );
 };
 

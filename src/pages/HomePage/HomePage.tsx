@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import styles from './HomePage.module.css';
 import Card from '../../components/Card/Card';
-import ContentFlex from '../../components/ContentFlex/ContentFlex';
 import { useAuth } from '../../Contexts/AuthContext';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
 import { database } from '../../firebase';
-import CenterCenter from '../../components/CenterCenter/CenterCenter';
 
 const HomePage: React.FC = () => {
   const { currentUser, logout } = useAuth();
@@ -31,20 +28,20 @@ const HomePage: React.FC = () => {
     return <h1>Loading...</h1>;
   }
   return (
-    <CenterCenter isColumn>
-      <p className={styles.mainTitle}>Poke-todo!</p>
+    <div className='flex flex-col items-center h-full'>
+      <p className='text-3xl font-bold m-4'>Poke-todo!</p>
       {name && <h2>Hi {name}!</h2>}
-      <ContentFlex>
-        <Card title='Title1'>Content1</Card>
-        <Card title='Title2'>Content2</Card>
-        <Card title='Title3'>Content3</Card>
-      </ContentFlex>
+      <div className='flex flex-wrap justify-center w-full h-2/3'>
+        <Card title='Title1' className='flex-grow'>Content1</Card>
+        <Card title='Title2' className='flex-grow'>Content2</Card>
+        <Card title='Title3' className='flex-grow'>Content3</Card>
+      </div>
       <div>
-        <button onClick={handleLogout} className={styles.logoutButton}>
+        <button onClick={handleLogout} className='bg-red-300 border border-red-800 px-4 py-2 rounded-md text-lg font-semibold text-red-800 cursor-pointer'>
           Log out
         </button>
       </div>
-    </CenterCenter>
+    </div>
   );
 };
 
