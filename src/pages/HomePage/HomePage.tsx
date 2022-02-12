@@ -3,9 +3,11 @@ import { database } from '../../firebase';
 import { useAuth } from '../../Contexts/AuthContext';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
 import Card from '../../components/Card/Card';
+import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 
 const HomePage: React.FC = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
 
@@ -20,27 +22,27 @@ const HomePage: React.FC = () => {
       });
   }, []);
 
-  const handleLogout = () => {
-    logout();
-  };
-
   if (loading) {
     return <h1>Loading...</h1>;
   }
   return (
-    <div className='flex flex-col items-center h-full'>
-      <p className='text-3xl font-bold m-4'>Poke-todo!</p>
-      {name && <h2>Hi {name}!</h2>}
-      <div className='flex flex-wrap justify-center w-full h-2/3'>
-        <Card title='Title1' className='flex-grow'>Content1</Card>
-        <Card title='Title2' className='flex-grow'>Content2</Card>
-        <Card title='Title3' className='flex-grow'>Content3</Card>
+    <div className='flex flex-col items-center min-h-full'>
+      <Navbar />
+      <div className='flex-grow w-full'>
+        {name && <h2>Hi {name}!</h2>}
+        <div className='flex flex-wrap justify-center w-full h-2/3'>
+          <Card title='Title1' className='flex-grow'>
+            Content1
+          </Card>
+          <Card title='Title2' className='flex-grow'>
+            Content2
+          </Card>
+          <Card title='Title3' className='flex-grow'>
+            Content3
+          </Card>
+        </div>
       </div>
-      <div>
-        <button onClick={handleLogout} className='bg-red-300 border border-red-800 px-4 py-2 rounded-md text-lg font-semibold text-red-800 cursor-pointer'>
-          Log out
-        </button>
-      </div>
+      <Footer />
     </div>
   );
 };
