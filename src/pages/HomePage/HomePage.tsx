@@ -5,6 +5,7 @@ import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
 import Card from '../../components/Card/Card';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
+import Loader from '../../components/Loader/Loader';
 
 const HomePage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -23,7 +24,7 @@ const HomePage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <h1>Loading...</h1>;
+    return <Loader />;
   }
   return (
     <div className='flex flex-col items-center min-h-full'>
@@ -31,13 +32,13 @@ const HomePage: React.FC = () => {
       <div className='flex-grow w-full'>
         {name && <h2>Hi {name}!</h2>}
         <div className='flex flex-wrap justify-center w-full h-2/3'>
-          <Card title='Title1' className='flex-grow'>
+          <Card title='Tasks' className='flex-grow'>
             Content1
           </Card>
-          <Card title='Title2' className='flex-grow'>
+          <Card title='Pokemon' className='flex-grow'>
             Content2
           </Card>
-          <Card title='Title3' className='flex-grow'>
+          <Card title='Items' className='flex-grow'>
             Content3
           </Card>
         </div>
