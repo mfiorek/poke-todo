@@ -46,10 +46,10 @@ const LoginPage: React.FC = () => {
   return (
     <div className='flex flex-col justify-center items-center h-full'>
       <Card title='Login' className='w-5/6 md:w-1/2 lg:w-1/3 xl:w-1/4'>
-          {generalError && <div className='my-1 px-2 py-3 border border-red-800 bg-red-200 rounded-md text-red-800'>{generalError}</div>}
+          {generalError && <div className='my-2 px-2 py-3 border border-red-800 bg-red-200 rounded-md text-red-800'>{generalError}</div>}
           <form onSubmit={handleLogin}>
-            <FormInput value={email} onChange={setEmail} type='email' errorMessage={emailError} placeholder='Email' />
-            <FormInput value={password} onChange={setPassword} type='password' errorMessage={passwordError} placeholder='Password' />
+            <FormInput id='email' value={email} onChange={setEmail} type='email' errorMessage={emailError} label='Email' />
+            <FormInput id='password' value={password} onChange={setPassword} type='password' errorMessage={passwordError} label='Password' />
             <button type='submit' disabled={loading} className='p-2 text-xl border rounded-md border-green-800 bg-green-700 w-full text-white'>
               Log In!
             </button>

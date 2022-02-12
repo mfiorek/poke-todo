@@ -1,20 +1,33 @@
 import React from 'react';
 
 interface IFormInputProps {
+  id: string;
   value: string;
   onChange: (val: string) => void;
-  placeholder?: string;
+  label: string;
   autoFocus?: boolean;
   name?: string;
   type?: 'email' | 'password' | 'text';
   errorMessage?: string;
 }
 
-const FormInput: React.FC<IFormInputProps> = ({ onChange, errorMessage, ...rest }: IFormInputProps) => {
+const FormInput: React.FC<IFormInputProps> = ({ id, onChange, label, errorMessage, ...rest }: IFormInputProps) => {
   return (
-    <div>
-      {errorMessage && <div className='my-1 px-2 py-3 border border-red-800 bg-red-200 rounded-md text-red-800'>{errorMessage}</div>}
-      <input className='rounded-md w-full border border-gray-400 p-3 mb-5' onChange={({ target: { value } }) => onChange(value)} {...rest} />
+    <div className='relative my-8 mb-12'>
+      <input
+        id={id}
+        className='peer h-10 w-full border-b border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-green-700'
+        placeholder='john@doe.com'
+        onChange={({ target: { value } }) => onChange(value)}
+        {...rest}
+      />
+      <label
+        htmlFor={id}
+        className='absolute left-0 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm'
+      >
+        {label}
+      </label>
+      {errorMessage && <div className='absolute right-0 -bottom-6 text-red-500'>{errorMessage}</div>}
     </div>
   );
 };
