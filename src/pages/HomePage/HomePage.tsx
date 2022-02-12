@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import Card from '../../components/Card/Card';
+import { database } from '../../firebase';
 import { useAuth } from '../../Contexts/AuthContext';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
-import { database } from '../../firebase';
+import Card from '../../components/Card/Card';
 
 const HomePage: React.FC = () => {
   const { currentUser, logout } = useAuth();

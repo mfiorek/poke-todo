@@ -1,9 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { database } from '../../firebase';
 import { useAuth } from '../../Contexts/AuthContext';
-import Card from '../../components/Card/Card';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
+import Card from '../../components/Card/Card';
 import FormInput from '../../components/FormInput/FormInput';
 
 const SignupPage: React.FC = () => {
