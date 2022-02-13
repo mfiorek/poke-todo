@@ -45,7 +45,7 @@ const HomePage: React.FC = () => {
               .map((task) => (
                 <TaskCard key={task.id} id={task.id} done={task.done} summary={task.summary} />
               ))}
-            {!!tasksUndone.length && (
+            {!!tasksDone.length && (
               <div>
                 <hr className='mt-8 mb-4'/>
                 <p>Done:</p>

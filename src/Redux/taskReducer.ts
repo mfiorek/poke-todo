@@ -13,6 +13,11 @@ export const taskReducer = (state: task[] = initialState, action: Actions) => {
       state[taskToUpdateIndex].done = action.payload.done;
       return [...state];
     }
+    case 'DELETE_TASK': {
+        const taskToUDeleteIndex = state.findIndex((task) => task.id === action.payload);
+        state.splice(taskToUDeleteIndex, 1);
+      return [...state];
+    }
     default:
       return state;
   }
