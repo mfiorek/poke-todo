@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { database } from '../../firebase';
 import { addTask } from '../../Redux/taskActions';
-import FormInput from '../FormInput/FormInput';
+import { task } from '../../Redux/types';
 
-const AddTaskInput: React.FC = () => {
+interface AddTaskInputProps {
+  userUid: string | undefined;
+}
+
+const AddTaskInput: React.FC<AddTaskInputProps> = ({ userUid }) => {
   const dispatch = useDispatch();
   const [taskSummary, setTaskSummary] = useState('');
 
   const handleAddTask = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(addTask(taskSummary));
+    const task: task = {id: `${userUid}${Date.now()}`, createdAt: Date.now(), done: false, summary: taskSummary}
+    dispatch(addTask(task));
     setTaskSummary('');
+    database.collection('users').doc(userUid).collection('tasks').doc(task.id).set(task);
   };
 
   return (

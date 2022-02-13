@@ -1,5 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { useAuth } from '../../Contexts/AuthContext';
+import { database } from '../../firebase';
 import { checkTask, deleteTask } from '../../Redux/taskActions';
 
 type TaskCardProps = {
@@ -11,13 +13,17 @@ type TaskCardProps = {
 const TaskCard: React.FC<TaskCardProps> = (props) => {
   const { id, summary, done } = props;
   const dispatch = useDispatch();
+  const { currentUser } = useAuth();
 
-  const handleCheckTask = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheckTask = async (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(checkTask(id, event.target.checked));
+    const taskPreUpdate = await database.collection('users').doc(currentUser?.uid).collection('tasks').doc(id).get();
+    database.collection('users').doc(currentUser?.uid).collection('tasks').doc(id).set({ ...taskPreUpdate.data(), done: event.target.checked });
   };
 
-  const handleDeleteTask = () => {
+  const handleDeleteTask = async () => {
     dispatch(deleteTask(id));
+    const taskPreUpdate = await database.collection('users').doc(currentUser?.uid).collection('tasks').doc(id).delete();
   };
 
   return (

@@ -5,6 +5,9 @@ const initialState: task[] = [];
 
 export const taskReducer = (state: task[] = initialState, action: Actions) => {
   switch (action.type) {
+    case 'CLEAR_TASKS': {
+      return [];
+    }
     case 'ADD_TASK': {
       return [...state, action.payload];
     }

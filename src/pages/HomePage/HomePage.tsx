@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { task, TasksState } from '../../Redux/types';
 import { database } from '../../firebase';
 import { useAuth } from '../../Contexts/AuthContext';
@@ -10,11 +10,13 @@ import Footer from '../../components/Footer/Footer';
 import Loader from '../../components/Loader/Loader';
 import AddTaskInput from '../../components/AddTaskInput/AddTaskInput';
 import TaskCard from '../../components/TaskCard/TaskCard';
+import { addTask, clearTasks } from '../../Redux/taskActions';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksState, task[]>((state) => state.tasksState.filter((task) => task.done));
   const tasksUndone = useSelector<TasksState, task[]>((state) => state.tasksState.filter((task) => !task.done));
   const { currentUser } = useAuth();
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
 
@@ -27,6 +29,14 @@ const HomePage: React.FC = () => {
         setName(userData.data()?.name);
         setLoading(false);
       });
+      dispatch(clearTasks());
+      const setTasksFromDatabase = async () => {
+        const tasks = await database.collection('users').doc(currentUser?.uid).collection('tasks').get();
+        tasks.docs.forEach((task) => {
+          dispatch(addTask(task.data() as task));
+        });
+      };
+      setTasksFromDatabase();
   }, []);
 
   if (loading) {
@@ -39,7 +49,7 @@ const HomePage: React.FC = () => {
         {name && <h2>Hi {name}!</h2>}
         <div className='flex flex-wrap justify-center w-full h-2/3'>
           <Card title='Tasks' className='flex-grow'>
-            <AddTaskInput />
+            <AddTaskInput userUid={currentUser?.uid} />
             {tasksUndone
               .sort((a, b) => b.createdAt - a.createdAt)
               .map((task) => (
@@ -47,7 +57,7 @@ const HomePage: React.FC = () => {
               ))}
             {!!tasksDone.length && (
               <div>
-                <hr className='mt-8 mb-4'/>
+                <hr className='mt-8 mb-4' />
                 <p>Done:</p>
                 {tasksDone
                   .sort((a, b) => b.createdAt - a.createdAt)
