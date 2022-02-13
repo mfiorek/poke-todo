@@ -7,7 +7,7 @@ Uses open PokeAPI for all the information about Pokemons and Firebase for authen
 - React
 - Vite
 - TailwindCSS
-- Reddux (not yet - to be added in the future)
+- Reddux
 - Firebase:
     - Authentication
     - Firestore database
