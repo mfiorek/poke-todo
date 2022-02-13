@@ -10,7 +10,7 @@ const Card: React.FC<Props> = (props) => {
 
   return (
     <div className={`m-4 p-4 shadow-lg border border-gray-100 ${className}`}>
-      <p className='text-2xl font-medium mb-6 vt323'>{title}</p>
+      <p className='text-2xl font-medium mb-3 vt323'>{title}</p>
       {children}
     </div>
   );
