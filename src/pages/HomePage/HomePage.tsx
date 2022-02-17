@@ -4,13 +4,13 @@ import { task, TasksState } from '../../Redux/types';
 import { database } from '../../firebase';
 import { useAuth } from '../../Contexts/AuthContext';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
+import { addTask, clearTasks } from '../../Redux/taskActions';
 import Card from '../../components/Card/Card';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import Loader from '../../components/Loader/Loader';
 import AddTaskInput from '../../components/AddTaskInput/AddTaskInput';
 import TaskCard from '../../components/TaskCard/TaskCard';
-import { addTask, clearTasks } from '../../Redux/taskActions';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksState, task[]>((state) => state.tasksState.filter((task) => task.done));
@@ -29,14 +29,14 @@ const HomePage: React.FC = () => {
         setName(userData.data()?.name);
         setLoading(false);
       });
-      dispatch(clearTasks());
-      const setTasksFromDatabase = async () => {
-        const tasks = await database.collection('users').doc(currentUser?.uid).collection('tasks').get();
-        tasks.docs.forEach((task) => {
-          dispatch(addTask(task.data() as task));
-        });
-      };
-      setTasksFromDatabase();
+    dispatch(clearTasks());
+    const setTasksFromDatabase = async () => {
+      const tasks = await database.collection('users').doc(currentUser?.uid).collection('tasks').get();
+      tasks.docs.forEach((task) => {
+        dispatch(addTask(task.data() as task));
+      });
+    };
+    setTasksFromDatabase();
   }, []);
 
   if (loading) {

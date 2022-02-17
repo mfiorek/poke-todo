@@ -1,8 +1,10 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useAuth } from '../../Contexts/AuthContext';
+import { useModal } from '../../Modal/ModalContext';
 import { database } from '../../firebase';
 import { checkTask, deleteTask } from '../../Redux/taskActions';
+import Modal from '../../Modal/Modal';
 
 type TaskCardProps = {
   id: string;
@@ -14,16 +16,32 @@ const TaskCard: React.FC<TaskCardProps> = (props) => {
   const { id, summary, done } = props;
   const dispatch = useDispatch();
   const { currentUser } = useAuth();
+  const { openModal } = useModal();
 
   const handleCheckTask = async (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(checkTask(id, event.target.checked));
     const taskPreUpdate = await database.collection('users').doc(currentUser?.uid).collection('tasks').doc(id).get();
-    database.collection('users').doc(currentUser?.uid).collection('tasks').doc(id).set({ ...taskPreUpdate.data(), done: event.target.checked });
+    database
+      .collection('users')
+      .doc(currentUser?.uid)
+      .collection('tasks')
+      .doc(id)
+      .set({ ...taskPreUpdate.data(), done: event.target.checked });
   };
 
-  const handleDeleteTask = async () => {
-    dispatch(deleteTask(id));
-    const taskPreUpdate = await database.collection('users').doc(currentUser?.uid).collection('tasks').doc(id).delete();
+  const handleDeleteTask = () => {
+    const handleDelete = async () => {
+      dispatch(deleteTask(id));
+      database.collection('users').doc(currentUser?.uid).collection('tasks').doc(id).delete();
+    };
+
+    openModal(
+      <Modal title='Are you sure?' labelGreen='Leave it' labelRed='Delete' handleRed={handleDelete}>
+        <p>Do you really want to delete task:</p>
+        <p className='my-4 font-bold'>{summary}</p>
+        <p>It will be forever lost 😢</p>
+      </Modal>,
+    );
   };
 
   return (
