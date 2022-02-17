@@ -2,16 +2,27 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../Contexts/AuthContext';
+import { useModal } from '../../Contexts/ModalContext';
 import { clearTasks } from '../../Redux/taskActions';
+import Modal from '../Modal/Modal';
 
 const Navbar: React.FC = (props) => {
   const { logout } = useAuth();
+  const { openModal } = useModal();
   const dispatch = useDispatch();
 
   const handleLogout = () => {
-    logout();
-    dispatch(clearTasks());
-  }
+    const doLogout = () => {
+      logout();
+      dispatch(clearTasks());
+    };
+
+    openModal(
+      <Modal title='Are you sure?' labelGreen='Stay!' labelRed='Log out' handleRed={doLogout}>
+        <p>Do you really want to log out?</p>
+      </Modal>,
+    );
+  };
 
   return (
     <nav className={`w-full flex justify-between bg-emerald-800 text-2xl text-white font-semibold vt323`}>
