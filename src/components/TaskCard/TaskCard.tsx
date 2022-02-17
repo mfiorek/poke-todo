@@ -1,10 +1,10 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useAuth } from '../../Contexts/AuthContext';
-import { useModal } from '../../Modal/ModalContext';
+import { useModal } from '../../Contexts/ModalContext';
 import { database } from '../../firebase';
 import { checkTask, deleteTask } from '../../Redux/taskActions';
-import Modal from '../../Modal/Modal';
+import Modal from '../Modal/Modal';
 
 type TaskCardProps = {
   id: string;

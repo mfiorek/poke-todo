@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import ModalPortal from './ModalPortal';
+import ReactDOM from 'react-dom';
 
 interface IModalContext {
   isOpen: boolean;
@@ -13,6 +13,16 @@ const ModalContext = React.createContext<IModalContext>({} as IModalContext);
 export function useModal() {
   return useContext(ModalContext);
 }
+
+const ModalPortal = () => {
+  const modalRoot = document.getElementById('modal-root') as HTMLElement;
+  const { isOpen, modalContent } = useModal();
+
+  if (!isOpen) {
+    return null;
+  }
+  return ReactDOM.createPortal(<>{modalContent}</>, modalRoot);
+};
 
 export const ModalProvider: React.FC = ({ children }) => {
   const [isOpen, setIsOpen] = React.useState(false);

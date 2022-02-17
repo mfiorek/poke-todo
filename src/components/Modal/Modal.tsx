@@ -1,5 +1,5 @@
 import React from 'react';
-import { useModal } from './ModalContext';
+import { useModal } from '../../Contexts/ModalContext';
 
 type Props = {
   title?: string;
