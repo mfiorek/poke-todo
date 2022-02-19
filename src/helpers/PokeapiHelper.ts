@@ -1,12 +1,13 @@
-import Pokemon from '../Types/Pokemon';
+import { pokemon } from "../state/pokemon/pokemonTypes";
 
 class PokeAPIHelper {
-  static getPokemonById = async (id: number): Promise<Pokemon> => {
+  static getPokemonById = async (id: number): Promise<pokemon> => {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
     const data = await response.json();
     return {
+      id,
       name: data.species.name,
-      img: data.sprites.front_default,
+      spriteSrc: data.sprites.front_default,
     };
   };
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useModal } from '../../Contexts/ModalContext';
-import useDatabaseHelper from '../../helpers/databaseHelper';
+import useDatabaseHelper from '../../helpers/useDatabaseHelper';
 import { checkTask, deleteTask } from '../../state/tasks/taskActions';
 import Modal from '../Modal/Modal';
 

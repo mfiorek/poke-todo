@@ -10,4 +10,6 @@ export interface PokemonsState {
 
 export interface pokemon {
   id: number;
+  name: string;
+  spriteSrc: string;
 }

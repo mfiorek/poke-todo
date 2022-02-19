@@ -5,13 +5,15 @@ import { addTask, clearTasks } from '../../state/tasks/taskActions';
 import { pokemon, PokemonsReducerState } from '../../state/pokemon/pokemonTypes';
 import { addPokemon, clearPokemon } from '../../state/pokemon/pokemonActions';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
-import useDatabaseHelper from '../../helpers/databaseHelper';
+import useDatabaseHelper from '../../helpers/useDatabaseHelper';
+import PokeAPIHelper from '../../helpers/PokeapiHelper';
 import Card from '../../components/Card/Card';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import Loader from '../../components/Loader/Loader';
 import AddTaskInput from '../../components/AddTaskInput/AddTaskInput';
 import TaskCard from '../../components/TaskCard/TaskCard';
+import PokemonTile from '../../components/PokemonTile/PokemonTile';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
@@ -19,13 +21,16 @@ const HomePage: React.FC = () => {
   const pokemons = useSelector<PokemonsReducerState, pokemon[]>((state) => state.pokemons.ownedPokemons);
   const dispatch = useDispatch();
   const databaseHelper = useDatabaseHelper();
-  const [loading, setLoading] = useState(true);
+  const [userLoading, setUserLoading] = useState(true);
+  const [tasksLoading, setTasksLoading] = useState(true);
+  const [pokemonsLoading, setPokemonsLoading] = useState(true);
   const [name, setName] = useState('');
 
   useEffect(() => {
     const userPromise = databaseHelper?.usersDocumentRef.get();
     userPromise?.then((userData) => {
       setName(userData.data()?.name);
+      setUserLoading(false);
     });
 
     dispatch(clearTasks());
@@ -34,6 +39,7 @@ const HomePage: React.FC = () => {
       tasks.docs.forEach((task) => {
         dispatch(addTask(task.data() as task));
       });
+      setTasksLoading(false);
     });
 
     dispatch(clearPokemon());
@@ -42,14 +48,19 @@ const HomePage: React.FC = () => {
       pokemons.docs.forEach((pokemon) => {
         dispatch(addPokemon(pokemon.data() as pokemon));
       });
-    });
-
-    Promise.allSettled([userPromise, tasksPromise, pokemonsPromise]).then(() => {
-      setLoading(false);
+      setPokemonsLoading(false);
     });
   }, []);
 
-  if (loading) {
+  const addRandomPokemon = () => {
+    const pokemonId = Math.ceil(Math.random() * 150) + 1;
+    PokeAPIHelper.getPokemonById(pokemonId).then((pokemon) => {
+      dispatch(addPokemon(pokemon));
+      databaseHelper?.pokemonsCollectionRef.add(pokemon);
+    });
+  };
+
+  if (userLoading || tasksLoading || pokemonsLoading) {
     return <Loader />;
   }
   return (
@@ -58,7 +69,7 @@ const HomePage: React.FC = () => {
       <div className='flex-grow w-full'>
         {name && <h2>Hi {name}!</h2>}
         <div className='flex flex-wrap justify-center w-full h-2/3'>
-          <Card title='Tasks' className='flex-grow'>
+          <Card title='Tasks' className='flex-grow max-w-md'>
             <AddTaskInput />
             {tasksUndone
               .sort((a, b) => b.createdAt - a.createdAt)
@@ -77,16 +88,19 @@ const HomePage: React.FC = () => {
               </div>
             )}
           </Card>
-          <Card title='Pokemon' className='flex-grow'>
-            {pokemons.map((pokemon) => (
-              <p key={pokemon.id}>{pokemon.id}</p>
-            ))}
+          <Card title='Pokemon' className='flex-grow max-w-md'>
+            <div className='flex flex-wrap'>
+              {pokemons.map((pokemon) => (
+                <PokemonTile key={pokemon.id} name={pokemon.name} spriteSrc={pokemon.spriteSrc} />
+              ))}
+            </div>
           </Card>
-          <Card title='Items' className='flex-grow'>
+          <Card title='Items' className='flex-grow max-w-md'>
             Content3
           </Card>
         </div>
       </div>
+      <button onClick={addRandomPokemon}>Add random Pokemon</button>
       <Footer />
     </div>
   );
