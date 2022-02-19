@@ -26,36 +26,51 @@ const HomePage: React.FC = () => {
   const [pokemonsLoading, setPokemonsLoading] = useState(true);
   const [name, setName] = useState('');
 
+  // Subscribe to user data
   useEffect(() => {
-    const userPromise = databaseHelper?.usersDocumentRef.get();
-    userPromise?.then((userData) => {
+    const userUnsubscribe = databaseHelper?.usersDocumentRef.onSnapshot((userData) => {
       setName(userData.data()?.name);
       setUserLoading(false);
     });
+    return () => {
+      if (userUnsubscribe) userUnsubscribe();
+    };
+  }, []);
 
-    dispatch(clearTasks());
-    const tasksPromise = databaseHelper?.tasksCollectionRef.get();
-    tasksPromise?.then((tasks) => {
+  // Subscribe to task data
+  useEffect(() => {
+    const tasksUnsubscribe = databaseHelper?.tasksCollectionRef.onSnapshot((tasks) => {
+      setTasksLoading(true);
+      dispatch(clearTasks());
       tasks.docs.forEach((task) => {
         dispatch(addTask(task.data() as task));
       });
       setTasksLoading(false);
     });
+    return () => {
+      if (tasksUnsubscribe) tasksUnsubscribe();
+    };
+  }, []);
 
-    dispatch(clearPokemon());
-    const pokemonsPromise = databaseHelper?.pokemonsCollectionRef.get();
-    pokemonsPromise?.then((pokemons) => {
+  // Subscribe to pokemon data
+  useEffect(() => {
+    const pokemonsUnsubscribe = databaseHelper?.pokemonsCollectionRef.onSnapshot((pokemons) => {
+      setPokemonsLoading(true);
+      dispatch(clearPokemon());
       pokemons.docs.forEach((pokemon) => {
         dispatch(addPokemon(pokemon.data() as pokemon));
       });
       setPokemonsLoading(false);
     });
+    return () => {
+      if (pokemonsUnsubscribe) pokemonsUnsubscribe();
+    };
   }, []);
 
   const addRandomPokemon = () => {
     const pokemonId = Math.ceil(Math.random() * 150) + 1;
     PokeAPIHelper.getPokemonById(pokemonId).then((pokemon) => {
-      dispatch(addPokemon(pokemon));
+      // dispatch(addPokemon(pokemon));
       databaseHelper?.pokemonsCollectionRef.add(pokemon);
     });
   };
