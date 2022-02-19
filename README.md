@@ -3,7 +3,7 @@ Simple todo app with gamify features that enable you to catch and level up Pokem
 Uses open PokeAPI for all the information about Pokemons and Firebase for authentication and storing data. 
 
 ## Technological stack:
-- PokeAPI (not yet - to be added in the future)
+- PokeAPI
 - React
 - Vite
 - TailwindCSS
