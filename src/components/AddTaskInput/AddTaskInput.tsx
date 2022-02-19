@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useAuth } from '../../Contexts/AuthContext';
 import { addTask } from '../../state/tasks/taskActions';
 import { task } from '../../state/tasks/taskTypes';
-import useDatabaseHelper from '../../helpers/databaseHelper';
+import useDatabaseHelper from '../../helpers/useDatabaseHelper';
 
 const AddTaskInput: React.FC = () => {
   const { currentUser } = useAuth();
