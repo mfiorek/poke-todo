@@ -1,50 +1,94 @@
 import React, { useEffect, useState } from 'react';
-import styles from './HomePage.module.css';
-import Card from '../../components/Card/Card';
-import ContentFlex from '../../components/ContentFlex/ContentFlex';
-import { useAuth } from '../../Contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { task, TasksReducerState } from '../../state/tasks/taskTypes';
+import { addTask, clearTasks } from '../../state/tasks/taskActions';
+import { pokemon, PokemonsReducerState } from '../../state/pokemon/pokemonTypes';
+import { addPokemon, clearPokemon } from '../../state/pokemon/pokemonActions';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
-import { database } from '../../firebase';
-import CenterCenter from '../../components/CenterCenter/CenterCenter';
+import useDatabaseHelper from '../../helpers/databaseHelper';
+import Card from '../../components/Card/Card';
+import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
+import Loader from '../../components/Loader/Loader';
+import AddTaskInput from '../../components/AddTaskInput/AddTaskInput';
+import TaskCard from '../../components/TaskCard/TaskCard';
 
 const HomePage: React.FC = () => {
-  const { currentUser, logout } = useAuth();
+  const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
+  const tasksUndone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => !task.done));
+  const pokemons = useSelector<PokemonsReducerState, pokemon[]>((state) => state.pokemons.ownedPokemons);
+  const dispatch = useDispatch();
+  const databaseHelper = useDatabaseHelper();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
 
   useEffect(() => {
-    database
-      .collection('users')
-      .doc(currentUser?.uid)
-      .get()
-      .then((userData) => {
-        setName(userData.data()?.name);
-        setLoading(false);
+    const userPromise = databaseHelper?.usersDocumentRef.get();
+    userPromise?.then((userData) => {
+      setName(userData.data()?.name);
+    });
+
+    dispatch(clearTasks());
+    const tasksPromise = databaseHelper?.tasksCollectionRef.get();
+    tasksPromise?.then((tasks) => {
+      tasks.docs.forEach((task) => {
+        dispatch(addTask(task.data() as task));
       });
+    });
+
+    dispatch(clearPokemon());
+    const pokemonsPromise = databaseHelper?.pokemonsCollectionRef.get();
+    pokemonsPromise?.then((pokemons) => {
+      pokemons.docs.forEach((pokemon) => {
+        dispatch(addPokemon(pokemon.data() as pokemon));
+      });
+    });
+
+    Promise.allSettled([userPromise, tasksPromise, pokemonsPromise]).then(() => {
+      setLoading(false);
+    });
   }, []);
 
-  const handleLogout = () => {
-    logout();
-  };
-
   if (loading) {
-    return <h1>Loading...</h1>;
+    return <Loader />;
   }
   return (
-    <CenterCenter isColumn>
-      <p className={styles.mainTitle}>Poke-todo!</p>
-      {name && <h2>Hi {name}!</h2>}
-      <ContentFlex>
-        <Card title='Title1'>Content1</Card>
-        <Card title='Title2'>Content2</Card>
-        <Card title='Title3'>Content3</Card>
-      </ContentFlex>
-      <div>
-        <button onClick={handleLogout} className={styles.logoutButton}>
-          Log out
-        </button>
+    <div className='flex flex-col items-center min-h-full'>
+      <Navbar />
+      <div className='flex-grow w-full'>
+        {name && <h2>Hi {name}!</h2>}
+        <div className='flex flex-wrap justify-center w-full h-2/3'>
+          <Card title='Tasks' className='flex-grow'>
+            <AddTaskInput />
+            {tasksUndone
+              .sort((a, b) => b.createdAt - a.createdAt)
+              .map((task) => (
+                <TaskCard key={task.id} id={task.id} done={task.done} summary={task.summary} />
+              ))}
+            {!!tasksDone.length && (
+              <div>
+                <hr className='mt-8 mb-4' />
+                <p>Done:</p>
+                {tasksDone
+                  .sort((a, b) => b.createdAt - a.createdAt)
+                  .map((task) => (
+                    <TaskCard key={task.id} id={task.id} done={task.done} summary={task.summary} />
+                  ))}
+              </div>
+            )}
+          </Card>
+          <Card title='Pokemon' className='flex-grow'>
+            {pokemons.map((pokemon) => (
+              <p key={pokemon.id}>{pokemon.id}</p>
+            ))}
+          </Card>
+          <Card title='Items' className='flex-grow'>
+            Content3
+          </Card>
+        </div>
       </div>
-    </CenterCenter>
+      <Footer />
+    </div>
   );
 };
 
