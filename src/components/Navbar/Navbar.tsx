@@ -3,10 +3,11 @@ import { useDispatch } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../Contexts/AuthContext';
 import { useModal } from '../../Contexts/ModalContext';
-import { clearTasks } from '../../Redux/taskActions';
+import { clearTasks } from '../../state/tasks/taskActions';
+import { clearPokemon } from '../../state/pokemon/pokemonActions';
 import Modal from '../Modal/Modal';
 
-const Navbar: React.FC = (props) => {
+const Navbar: React.FC = () => {
   const { logout } = useAuth();
   const { openModal } = useModal();
   const dispatch = useDispatch();
@@ -15,6 +16,7 @@ const Navbar: React.FC = (props) => {
     const doLogout = () => {
       logout();
       dispatch(clearTasks());
+      dispatch(clearPokemon());
     };
 
     openModal(

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { task, TasksState } from '../../Redux/types';
-import { database } from '../../firebase';
-import { useAuth } from '../../Contexts/AuthContext';
+import { task, TasksReducerState } from '../../state/tasks/taskTypes';
+import { addTask, clearTasks } from '../../state/tasks/taskActions';
+import { pokemon, PokemonsReducerState } from '../../state/pokemon/pokemonTypes';
+import { addPokemon, clearPokemon } from '../../state/pokemon/pokemonActions';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
-import { addTask, clearTasks } from '../../Redux/taskActions';
+import useDatabaseHelper from '../../helpers/databaseHelper';
 import Card from '../../components/Card/Card';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
@@ -13,30 +14,39 @@ import AddTaskInput from '../../components/AddTaskInput/AddTaskInput';
 import TaskCard from '../../components/TaskCard/TaskCard';
 
 const HomePage: React.FC = () => {
-  const tasksDone = useSelector<TasksState, task[]>((state) => state.tasksState.filter((task) => task.done));
-  const tasksUndone = useSelector<TasksState, task[]>((state) => state.tasksState.filter((task) => !task.done));
-  const { currentUser } = useAuth();
+  const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
+  const tasksUndone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => !task.done));
+  const pokemons = useSelector<PokemonsReducerState, pokemon[]>((state) => state.pokemons.ownedPokemons);
   const dispatch = useDispatch();
+  const databaseHelper = useDatabaseHelper();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
 
   useEffect(() => {
-    database
-      .collection('users')
-      .doc(currentUser?.uid)
-      .get()
-      .then((userData) => {
-        setName(userData.data()?.name);
-        setLoading(false);
-      });
+    const userPromise = databaseHelper?.usersDocumentRef.get();
+    userPromise?.then((userData) => {
+      setName(userData.data()?.name);
+    });
+
     dispatch(clearTasks());
-    const setTasksFromDatabase = async () => {
-      const tasks = await database.collection('users').doc(currentUser?.uid).collection('tasks').get();
+    const tasksPromise = databaseHelper?.tasksCollectionRef.get();
+    tasksPromise?.then((tasks) => {
       tasks.docs.forEach((task) => {
         dispatch(addTask(task.data() as task));
       });
-    };
-    setTasksFromDatabase();
+    });
+
+    dispatch(clearPokemon());
+    const pokemonsPromise = databaseHelper?.pokemonsCollectionRef.get();
+    pokemonsPromise?.then((pokemons) => {
+      pokemons.docs.forEach((pokemon) => {
+        dispatch(addPokemon(pokemon.data() as pokemon));
+      });
+    });
+
+    Promise.allSettled([userPromise, tasksPromise, pokemonsPromise]).then(() => {
+      setLoading(false);
+    });
   }, []);
 
   if (loading) {
@@ -49,7 +59,7 @@ const HomePage: React.FC = () => {
         {name && <h2>Hi {name}!</h2>}
         <div className='flex flex-wrap justify-center w-full h-2/3'>
           <Card title='Tasks' className='flex-grow'>
-            <AddTaskInput userUid={currentUser?.uid} />
+            <AddTaskInput />
             {tasksUndone
               .sort((a, b) => b.createdAt - a.createdAt)
               .map((task) => (
@@ -68,7 +78,9 @@ const HomePage: React.FC = () => {
             )}
           </Card>
           <Card title='Pokemon' className='flex-grow'>
-            Content2
+            {pokemons.map((pokemon) => (
+              <p key={pokemon.id}>{pokemon.id}</p>
+            ))}
           </Card>
           <Card title='Items' className='flex-grow'>
             Content3

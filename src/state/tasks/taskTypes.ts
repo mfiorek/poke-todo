@@ -1,5 +1,5 @@
-export interface TasksState {
-    tasksState: task[];
+export interface TasksReducerState {
+    tasks: task[];
 }
 
 export interface task {

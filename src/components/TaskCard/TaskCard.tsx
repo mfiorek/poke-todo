@@ -1,9 +1,8 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { useAuth } from '../../Contexts/AuthContext';
 import { useModal } from '../../Contexts/ModalContext';
-import { database } from '../../firebase';
-import { checkTask, deleteTask } from '../../Redux/taskActions';
+import useDatabaseHelper from '../../helpers/databaseHelper';
+import { checkTask, deleteTask } from '../../state/tasks/taskActions';
 import Modal from '../Modal/Modal';
 
 type TaskCardProps = {
@@ -15,24 +14,19 @@ type TaskCardProps = {
 const TaskCard: React.FC<TaskCardProps> = (props) => {
   const { id, summary, done } = props;
   const dispatch = useDispatch();
-  const { currentUser } = useAuth();
   const { openModal } = useModal();
+  const databaseHelper = useDatabaseHelper();
 
   const handleCheckTask = async (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(checkTask(id, event.target.checked));
-    const taskPreUpdate = await database.collection('users').doc(currentUser?.uid).collection('tasks').doc(id).get();
-    database
-      .collection('users')
-      .doc(currentUser?.uid)
-      .collection('tasks')
-      .doc(id)
-      .set({ ...taskPreUpdate.data(), done: event.target.checked });
+    const taskPreUpdate = await databaseHelper?.tasksCollectionRef.doc(id).get();
+    databaseHelper?.tasksCollectionRef.doc(id).set({ ...taskPreUpdate?.data(), done: event.target.checked });
   };
 
   const handleDeleteTask = () => {
     const handleDelete = async () => {
       dispatch(deleteTask(id));
-      database.collection('users').doc(currentUser?.uid).collection('tasks').doc(id).delete();
+      databaseHelper?.tasksCollectionRef.doc(id).delete();
     };
 
     openModal(

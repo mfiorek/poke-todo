@@ -1,23 +1,22 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { database } from '../../firebase';
-import { addTask } from '../../Redux/taskActions';
-import { task } from '../../Redux/types';
+import { useAuth } from '../../Contexts/AuthContext';
+import { addTask } from '../../state/tasks/taskActions';
+import { task } from '../../state/tasks/taskTypes';
+import useDatabaseHelper from '../../helpers/databaseHelper';
 
-interface AddTaskInputProps {
-  userUid: string | undefined;
-}
-
-const AddTaskInput: React.FC<AddTaskInputProps> = ({ userUid }) => {
+const AddTaskInput: React.FC = () => {
+  const { currentUser } = useAuth();
+  const databaseHelper = useDatabaseHelper();
   const dispatch = useDispatch();
   const [taskSummary, setTaskSummary] = useState('');
 
   const handleAddTask = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const task: task = {id: `${userUid}${Date.now()}`, createdAt: Date.now(), done: false, summary: taskSummary}
+    const task: task = { id: `${currentUser?.uid}${Date.now()}`, createdAt: Date.now(), done: false, summary: taskSummary };
     dispatch(addTask(task));
+    databaseHelper?.tasksCollectionRef.doc(task.id).set(task);
     setTaskSummary('');
-    database.collection('users').doc(userUid).collection('tasks').doc(task.id).set(task);
   };
 
   return (

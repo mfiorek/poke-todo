@@ -1,6 +1,6 @@
-import { task } from "./types";
+import { task } from "./taskTypes";
 
-type ClearTasksAction = { type: "CLEAR_TASKS"; payload: null };
+type ClearTasksAction = { type: "CLEAR_TASKS" };
 type AddTaskAction = { type: "ADD_TASK"; payload: task };
 type CheckTaskAction = { type: "CHECK_TASK"; payload: {id: string, done: boolean} };
 type DeleteTaskAction = { type: "DELETE_TASK"; payload: string };
@@ -8,7 +8,6 @@ export type Actions = ClearTasksAction | AddTaskAction | CheckTaskAction | Delet
 
 export const clearTasks = (): ClearTasksAction => ({
   type: "CLEAR_TASKS",
-  payload: null,
 });
 
 export const addTask = (task: task): AddTaskAction => ({
