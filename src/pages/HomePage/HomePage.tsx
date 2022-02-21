@@ -83,8 +83,8 @@ const HomePage: React.FC = () => {
       <Navbar />
       <div className='flex-grow w-full'>
         {name && <h2>Hi {name}!</h2>}
-        <div className='flex flex-wrap justify-center w-full h-2/3'>
-          <Card title='Tasks' className='flex-grow max-w-md'>
+        <div className='grid grid-cols-2 xl:grid-cols-4 p-4 gap-4'>
+          <Card title='Tasks'>
             <AddTaskInput />
             {tasksUndone
               .sort((a, b) => b.createdAt - a.createdAt)
@@ -103,15 +103,18 @@ const HomePage: React.FC = () => {
               </div>
             )}
           </Card>
-          <Card title='Pokemon' className='flex-grow max-w-md'>
+          <Card title='Pokemon'>
             <div className='flex flex-wrap'>
               {pokemons.map((pokemon) => (
                 <PokemonTile key={pokemon.id} name={pokemon.name} spriteSrc={pokemon.spriteSrc} />
               ))}
             </div>
           </Card>
-          <Card title='Items' className='flex-grow max-w-md'>
+          <Card title='Items'>
             Content3
+          </Card>
+          <Card title='Shop'>
+            Content4
           </Card>
         </div>
       </div>
