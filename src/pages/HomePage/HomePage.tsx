@@ -14,6 +14,7 @@ import Loader from '../../components/Loader/Loader';
 import AddTaskInput from '../../components/AddTaskInput/AddTaskInput';
 import TaskCard from '../../components/TaskCard/TaskCard';
 import PokemonTile from '../../components/PokemonTile/PokemonTile';
+import CurrentPokemonBanner from '../../components/CurrentPokemonBanner/CurrentPokemonBanner';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
@@ -82,7 +83,7 @@ const HomePage: React.FC = () => {
     <div className='flex flex-col items-center min-h-full'>
       <Navbar />
       <div className='flex-grow w-full'>
-        {name && <h2>Hi {name}!</h2>}
+        <CurrentPokemonBanner />
         <div className='grid grid-cols-2 xl:grid-cols-4 p-4 gap-4'>
           <Card title='Tasks'>
             <AddTaskInput />
@@ -104,7 +105,7 @@ const HomePage: React.FC = () => {
             )}
           </Card>
           <Card title='Pokemon'>
-            <div className='flex flex-wrap'>
+            <div className='flex flex-wrap gap-2'>
               {pokemons.map((pokemon) => (
                 <PokemonTile key={pokemon.id} name={pokemon.name} spriteSrc={pokemon.spriteSrc} />
               ))}
