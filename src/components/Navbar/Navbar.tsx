@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../Contexts/AuthContext';
 import { useModal } from '../../Contexts/ModalContext';
 import { clearTasks } from '../../state/tasks/taskActions';
-import { clearPokemon } from '../../state/pokemon/pokemonActions';
+import { clearCurrentPokemon, clearPokemons } from '../../state/pokemon/pokemonActions';
 import Modal from '../Modal/Modal';
 
 const Navbar: React.FC = () => {
@@ -16,7 +16,8 @@ const Navbar: React.FC = () => {
     const doLogout = () => {
       logout();
       dispatch(clearTasks());
-      dispatch(clearPokemon());
+      dispatch(clearCurrentPokemon());
+      dispatch(clearPokemons());
     };
 
     openModal(

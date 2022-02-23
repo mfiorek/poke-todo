@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { task, TasksReducerState } from '../../state/tasks/taskTypes';
 import { addTask, clearTasks } from '../../state/tasks/taskActions';
 import { pokemon, PokemonsReducerState } from '../../state/pokemon/pokemonTypes';
-import { addPokemon, clearPokemon } from '../../state/pokemon/pokemonActions';
+import { addPokemon, clearPokemons, setCurrentPokemon } from '../../state/pokemon/pokemonActions';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
 import useDatabaseHelper from '../../helpers/useDatabaseHelper';
 import PokeAPIHelper from '../../helpers/PokeapiHelper';
@@ -25,12 +25,11 @@ const HomePage: React.FC = () => {
   const [userLoading, setUserLoading] = useState(true);
   const [tasksLoading, setTasksLoading] = useState(true);
   const [pokemonsLoading, setPokemonsLoading] = useState(true);
-  const [name, setName] = useState('');
 
   // Subscribe to user data
   useEffect(() => {
     const userUnsubscribe = databaseHelper?.usersDocumentRef.onSnapshot((userData) => {
-      setName(userData.data()?.name);
+      dispatch(setCurrentPokemon(userData.data()?.currentPokemonId));
       setUserLoading(false);
     });
     return () => {
@@ -57,7 +56,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const pokemonsUnsubscribe = databaseHelper?.pokemonsCollectionRef.onSnapshot((pokemons) => {
       setPokemonsLoading(true);
-      dispatch(clearPokemon());
+      dispatch(clearPokemons());
       pokemons.docs.forEach((pokemon) => {
         dispatch(addPokemon(pokemon.data() as pokemon));
       });
@@ -74,6 +73,11 @@ const HomePage: React.FC = () => {
       // dispatch(addPokemon(pokemon));
       databaseHelper?.pokemonsCollectionRef.add(pokemon);
     });
+  };
+
+  const chooseCurrentPokemon = (id: number) => {
+    // dispatch(setCurrentPokemon(id));
+    databaseHelper?.usersDocumentRef.update({ currentPokemonId: id });
   };
 
   if (userLoading || tasksLoading || pokemonsLoading) {
@@ -107,16 +111,12 @@ const HomePage: React.FC = () => {
           <Card title='Pokemon'>
             <div className='flex flex-wrap gap-2'>
               {pokemons.map((pokemon) => (
-                <PokemonTile key={pokemon.id} name={pokemon.name} spriteSrc={pokemon.spriteSrc} />
+                <PokemonTile key={pokemon.id} id={pokemon.id} name={pokemon.name} spriteSrc={pokemon.spriteSrc} onClick={() => chooseCurrentPokemon(pokemon.id)} />
               ))}
             </div>
           </Card>
-          <Card title='Items'>
-            Content3
-          </Card>
-          <Card title='Shop'>
-            Content4
-          </Card>
+          <Card title='Items'>Content3</Card>
+          <Card title='Shop'>Content4</Card>
         </div>
       </div>
       <button onClick={addRandomPokemon}>Add random Pokemon</button>
