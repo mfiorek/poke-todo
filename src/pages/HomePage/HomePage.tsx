@@ -5,6 +5,7 @@ import { addTask, clearTasks } from '../../state/tasks/taskActions';
 import { pokemon, PokemonsReducerState } from '../../state/pokemon/pokemonTypes';
 import { addPokemon, clearPokemons, setCurrentPokemon } from '../../state/pokemon/pokemonActions';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
+import { useModal } from '../../Contexts/ModalContext';
 import useDatabaseHelper from '../../helpers/useDatabaseHelper';
 import PokeAPIHelper from '../../helpers/PokeapiHelper';
 import Card from '../../components/Card/Card';
@@ -15,6 +16,7 @@ import AddTaskInput from '../../components/AddTaskInput/AddTaskInput';
 import TaskCard from '../../components/TaskCard/TaskCard';
 import PokemonTile from '../../components/PokemonTile/PokemonTile';
 import CurrentPokemonBanner from '../../components/CurrentPokemonBanner/CurrentPokemonBanner';
+import WelcomeModal from '../../components/WelcomeModal/WelcomeModal';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
@@ -22,6 +24,7 @@ const HomePage: React.FC = () => {
   const pokemons = useSelector<PokemonsReducerState, pokemon[]>((state) => state.pokemons.ownedPokemons);
   const dispatch = useDispatch();
   const databaseHelper = useDatabaseHelper();
+  const { openModal } = useModal();
   const [userLoading, setUserLoading] = useState(true);
   const [tasksLoading, setTasksLoading] = useState(true);
   const [pokemonsLoading, setPokemonsLoading] = useState(true);
@@ -55,7 +58,9 @@ const HomePage: React.FC = () => {
   // Subscribe to pokemon data
   useEffect(() => {
     const pokemonsUnsubscribe = databaseHelper?.pokemonsCollectionRef.onSnapshot((pokemons) => {
-      setPokemonsLoading(true);
+      if (pokemons.docs.length === 0) {
+        openModal(<WelcomeModal />);
+      }
       dispatch(clearPokemons());
       pokemons.docs.forEach((pokemon) => {
         dispatch(addPokemon(pokemon.data() as pokemon));
@@ -110,9 +115,11 @@ const HomePage: React.FC = () => {
           </Card>
           <Card title='Pokemon'>
             <div className='flex flex-wrap gap-2'>
-              {pokemons.sort((pokeA, pokeB) => pokeA.id - pokeB.id).map((pokemon) => (
-                <PokemonTile key={pokemon.id} id={pokemon.id} name={pokemon.name} spriteSrc={pokemon.spriteSrc} onClick={() => chooseCurrentPokemon(pokemon.id)} />
-              ))}
+              {pokemons
+                .sort((pokeA, pokeB) => pokeA.id - pokeB.id)
+                .map((pokemon) => (
+                  <PokemonTile key={pokemon.id} id={pokemon.id} name={pokemon.name} spriteSrc={pokemon.spriteSrc} onClick={() => chooseCurrentPokemon(pokemon.id)} />
+                ))}
             </div>
           </Card>
           <Card title='Items'>Content3</Card>
