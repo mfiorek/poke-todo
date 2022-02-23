@@ -110,7 +110,7 @@ const HomePage: React.FC = () => {
           </Card>
           <Card title='Pokemon'>
             <div className='flex flex-wrap gap-2'>
-              {pokemons.map((pokemon) => (
+              {pokemons.sort((pokeA, pokeB) => pokeA.id - pokeB.id).map((pokemon) => (
                 <PokemonTile key={pokemon.id} id={pokemon.id} name={pokemon.name} spriteSrc={pokemon.spriteSrc} onClick={() => chooseCurrentPokemon(pokemon.id)} />
               ))}
             </div>
