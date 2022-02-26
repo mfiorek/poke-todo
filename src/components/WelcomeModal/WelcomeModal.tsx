@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import PokeAPIHelper from '../../helpers/PokeapiHelper';
 import useDatabaseHelper from '../../helpers/useDatabaseHelper';
 import { setCurrentPokemon } from '../../state/pokemon/pokemonActions';
 import { pokemon } from '../../state/pokemon/pokemonTypes';
+import { UserReducerState } from '../../state/user/userTypes';
 import Modal from '../Modal/Modal';
 import PokemonTile from '../PokemonTile/PokemonTile';
 
 const WelcomeModal: React.FC = () => {
+  const payerName = useSelector<UserReducerState, string>((state) => state.user.name);
   const [selectedPokemon, setSelectedPokemon] = useState<pokemon | undefined>(undefined);
   const [startingPokemons, setStartingPokemons] = useState<pokemon[]>([]);
-  const [name, setName] = useState<string>('');
   const databaseHelper = useDatabaseHelper();
   const dispatch = useDispatch();
 
@@ -23,12 +24,6 @@ const WelcomeModal: React.FC = () => {
       setStartingPokemons(resolvedPokemonsArray);
     });
   }, []);
-
-  useEffect(() => {
-    databaseHelper?.usersDocumentRef.get().then((userData) => {
-      setName(userData.data()?.name);
-    });
-  });
 
   const selectPokemon = (pokemon: pokemon) => {
     setSelectedPokemon(pokemon);
@@ -46,7 +41,7 @@ const WelcomeModal: React.FC = () => {
     return null;
   }
   return (
-    <Modal title={`Hi ${name}!`} labelGreen='Confirm' handleGreen={addSelectedPokemon} disableGreen={!selectedPokemon}>
+    <Modal title={`Hi ${payerName}!`} labelGreen='Confirm' handleGreen={addSelectedPokemon} disableGreen={!selectedPokemon}>
       <div className='flex flex-col gap-4 max-w-lg'>
         <p>Welcome to Poke-todo!</p>
         <p>Profesor Oak has agreed to put one of these Pokemons into your care. Choose your starting Pokemon that will help you complete your real life tasks!</p>
