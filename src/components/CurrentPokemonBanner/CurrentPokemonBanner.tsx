@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { pokemon, PokemonsReducerState, PokemonsState } from '../../state/pokemon/pokemonTypes';
+import { pokemon, PokemonsReducerState } from '../../state/pokemon/pokemonTypes';
 import PokemonTile from '../PokemonTile/PokemonTile';
 import StatBar from '../StatBar/StatBar';
 
@@ -9,7 +9,7 @@ const CurrentPokemonBanner: React.FC = () => {
   const currentPokemon = useSelector<PokemonsReducerState, pokemon | undefined>((state) => state.pokemons.ownedPokemons.find((pokemon) => pokemon.id === currentPokemonId));
 
   return (
-    <div className='flex items-center gap-4 p-2 bg-emerald-400'>
+    <div className='flex items-center gap-4 p-2'>
       <PokemonTile id={currentPokemon?.id || 0} spriteSrc={currentPokemon?.spriteSrc || ''} />
       <div>
         <div className='flex gap-2'>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { setUserName, setGold } from '../../state/user/userActions';
 import { task, TasksReducerState } from '../../state/tasks/taskTypes';
 import { addTask, clearTasks } from '../../state/tasks/taskActions';
 import { pokemon, PokemonsReducerState } from '../../state/pokemon/pokemonTypes';
@@ -17,6 +18,7 @@ import TaskCard from '../../components/TaskCard/TaskCard';
 import PokemonTile from '../../components/PokemonTile/PokemonTile';
 import CurrentPokemonBanner from '../../components/CurrentPokemonBanner/CurrentPokemonBanner';
 import WelcomeModal from '../../components/WelcomeModal/WelcomeModal';
+import PlayerBanner from '../../components/PlayerBanner/PlayerBanner';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
@@ -32,6 +34,8 @@ const HomePage: React.FC = () => {
   // Subscribe to user data
   useEffect(() => {
     const userUnsubscribe = databaseHelper?.usersDocumentRef.onSnapshot((userData) => {
+      dispatch(setUserName(userData.data()?.name));
+      dispatch(setGold(userData.data()?.gold || 0));
       dispatch(setCurrentPokemon(userData.data()?.currentPokemonId));
       setUserLoading(false);
     });
@@ -72,6 +76,13 @@ const HomePage: React.FC = () => {
     };
   }, []);
 
+  const add500Gold = () => {
+    databaseHelper?.usersDocumentRef.get().then((user) => {
+      const currentGold = user.data()?.gold || 0;
+      databaseHelper?.usersDocumentRef.update({ gold: currentGold + 500 });
+    });
+  };
+
   const addRandomPokemon = () => {
     const pokemonId = Math.ceil(Math.random() * 150) + 1;
     PokeAPIHelper.getPokemonById(pokemonId).then((pokemon) => {
@@ -92,8 +103,11 @@ const HomePage: React.FC = () => {
     <div className='flex flex-col items-center min-h-full'>
       <Navbar />
       <div className='flex-grow w-full'>
-        <CurrentPokemonBanner />
-        <div className='grid grid-cols-2 xl:grid-cols-4 p-4 gap-4'>
+        <div id='PokemonAndPlayerBanner' className='flex justify-between bg-emerald-400'>
+          <CurrentPokemonBanner />
+          <PlayerBanner />
+        </div>
+        <div id='CardsContainer' className='grid grid-cols-2 xl:grid-cols-4 p-4 gap-4'>
           <Card title='Tasks'>
             <AddTaskInput />
             {tasksUndone
@@ -127,6 +141,7 @@ const HomePage: React.FC = () => {
         </div>
       </div>
       <button onClick={addRandomPokemon}>Add random Pokemon</button>
+      <button onClick={add500Gold}>Add 500 gold</button>
       <Footer />
     </div>
   );
