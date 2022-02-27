@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserName, setGold } from '../../state/user/userActions';
+import { UserReducerState } from '../../state/user/userTypes';
 import { task, TasksReducerState } from '../../state/tasks/taskTypes';
 import { addTask, clearTasks } from '../../state/tasks/taskActions';
 import { pokemon, PokemonsReducerState } from '../../state/pokemon/pokemonTypes';
@@ -22,12 +23,14 @@ import CurrentPokemonBanner from '../../components/CurrentPokemonBanner/CurrentP
 import WelcomeModal from '../../components/WelcomeModal/WelcomeModal';
 import PlayerBanner from '../../components/PlayerBanner/PlayerBanner';
 import ItemTile from '../../components/ItemTile/ItemTile';
+import Modal from '../../components/Modal/Modal';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
   const tasksUndone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => !task.done));
   const pokemons = useSelector<PokemonsReducerState, pokemon[]>((state) => state.pokemons.ownedPokemons);
   const items = useSelector<ItemsReducerState, item[]>((state) => state.items);
+  const gold = useSelector<UserReducerState, number>((state) => state.user.gold);
   const dispatch = useDispatch();
   const databaseHelper = useDatabaseHelper();
   const { openModal } = useModal();
@@ -128,6 +131,40 @@ const HomePage: React.FC = () => {
     databaseHelper?.usersDocumentRef.update({ currentPokemonId: id });
   };
 
+  const showBuyItemModal = (item: item) => {
+    const buyItem = () => {
+      databaseHelper?.itemsCollectionRef
+        .where('id', '==', item.id)
+        .get()
+        .then((items) => {
+          items.docs.forEach((item) => {
+            const currentQuantity = item.data()?.quantity;
+            item.ref.update({ quantity: currentQuantity + 1 });
+          });
+        });
+
+      databaseHelper?.usersDocumentRef.update({ gold: gold - item.price });
+    };
+
+    if (item.price > gold) {
+      openModal(
+        <Modal labelGreen='Ok'>
+          <p>
+            You don't have enough ({item.price}) gold to buy <span className='capitalize'>{item.name}</span> 😔
+          </p>
+        </Modal>,
+      );
+    } else {
+      openModal(
+        <Modal labelGreen='Buy' labelRed="Don't buy" handleGreen={buyItem}>
+          <p>
+            Are you sure you want to buy <span className='capitalize'>{item.name}</span> for {item.price} gold?
+          </p>
+        </Modal>,
+      );
+    }
+  };
+
   if (userLoading || tasksLoading || pokemonsLoading || itemsLoading) {
     return <Loader />;
   }
@@ -183,9 +220,10 @@ const HomePage: React.FC = () => {
               {items
                 .sort((itemA, itemB) => itemA.id - itemB.id)
                 .map((item) => (
-                  <ItemTile key={item.id} name={item.name} price={item.price} spriteSrc={item.spriteSrc} onClick={() => console.log(item.name)} />
+                  <ItemTile key={item.id} name={item.name} price={item.price} spriteSrc={item.spriteSrc} onClick={() => showBuyItemModal(item)} />
                 ))}
-            </div></Card>
+            </div>
+          </Card>
         </div>
       </div>
       <button onClick={addRandomPokemon}>Add random Pokemon</button>
