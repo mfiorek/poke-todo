@@ -5,6 +5,8 @@ import { task, TasksReducerState } from '../../state/tasks/taskTypes';
 import { addTask, clearTasks } from '../../state/tasks/taskActions';
 import { pokemon, PokemonsReducerState } from '../../state/pokemon/pokemonTypes';
 import { addPokemon, clearPokemons, setCurrentPokemon } from '../../state/pokemon/pokemonActions';
+import { item, ItemsReducerState } from '../../state/items/itemTypes';
+import { addItem, clearItems } from '../../state/items/itemActions';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
 import { useModal } from '../../Contexts/ModalContext';
 import useDatabaseHelper from '../../helpers/useDatabaseHelper';
@@ -19,17 +21,20 @@ import PokemonTile from '../../components/PokemonTile/PokemonTile';
 import CurrentPokemonBanner from '../../components/CurrentPokemonBanner/CurrentPokemonBanner';
 import WelcomeModal from '../../components/WelcomeModal/WelcomeModal';
 import PlayerBanner from '../../components/PlayerBanner/PlayerBanner';
+import ItemTile from '../../components/ItemTile/ItemTile';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
   const tasksUndone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => !task.done));
   const pokemons = useSelector<PokemonsReducerState, pokemon[]>((state) => state.pokemons.ownedPokemons);
+  const items = useSelector<ItemsReducerState, item[]>((state) => state.items);
   const dispatch = useDispatch();
   const databaseHelper = useDatabaseHelper();
   const { openModal } = useModal();
   const [userLoading, setUserLoading] = useState(true);
   const [tasksLoading, setTasksLoading] = useState(true);
   const [pokemonsLoading, setPokemonsLoading] = useState(true);
+  const [itemsLoading, setItemsLoading] = useState(true);
 
   // Subscribe to user data
   useEffect(() => {
@@ -76,6 +81,23 @@ const HomePage: React.FC = () => {
     };
   }, []);
 
+  // Subscribe to items data
+  useEffect(() => {
+    const itemsUnsubscribe = databaseHelper?.itemsCollectionRef.onSnapshot((items) => {
+      if (items.docs.length === 0) {
+        getAllItems();
+      }
+      dispatch(clearItems());
+      items.docs.forEach((item) => {
+        dispatch(addItem(item.data() as item));
+      });
+      setItemsLoading(false);
+    });
+    return () => {
+      if (itemsUnsubscribe) itemsUnsubscribe();
+    };
+  }, []);
+
   const add500Gold = () => {
     databaseHelper?.usersDocumentRef.get().then((user) => {
       const currentGold = user.data()?.gold || 0;
@@ -91,12 +113,22 @@ const HomePage: React.FC = () => {
     });
   };
 
+  const getAllItems = () => {
+    // Hardcoded list of items to get (only several needed of a total 1607)
+    const itemsIds = [2, 3, 4, 17, 24, 25, 26, 27, 28];
+    itemsIds.forEach((id) => {
+      PokeAPIHelper.getItemById(id).then((item) => {
+        databaseHelper?.itemsCollectionRef.add(item);
+      });
+    });
+  };
+
   const chooseCurrentPokemon = (id: number) => {
     // dispatch(setCurrentPokemon(id));
     databaseHelper?.usersDocumentRef.update({ currentPokemonId: id });
   };
 
-  if (userLoading || tasksLoading || pokemonsLoading) {
+  if (userLoading || tasksLoading || pokemonsLoading || itemsLoading) {
     return <Loader />;
   }
   return (
@@ -136,8 +168,24 @@ const HomePage: React.FC = () => {
                 ))}
             </div>
           </Card>
-          <Card title='Items'>Content3</Card>
-          <Card title='Shop'>Content4</Card>
+          <Card title='Items'>
+            <div className='flex flex-wrap gap-6'>
+              {items
+                .sort((itemA, itemB) => itemA.id - itemB.id)
+                .filter((item) => item.quantity > 0)
+                .map((item) => (
+                  <ItemTile key={item.id} name={item.name} quantity={item.quantity} spriteSrc={item.spriteSrc} />
+                ))}
+            </div>
+          </Card>
+          <Card title='Shop'>
+            <div className='flex flex-wrap gap-2'>
+              {items
+                .sort((itemA, itemB) => itemA.id - itemB.id)
+                .map((item) => (
+                  <ItemTile key={item.id} name={item.name} price={item.price} spriteSrc={item.spriteSrc} onClick={() => console.log(item.name)} />
+                ))}
+            </div></Card>
         </div>
       </div>
       <button onClick={addRandomPokemon}>Add random Pokemon</button>

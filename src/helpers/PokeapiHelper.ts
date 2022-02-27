@@ -1,3 +1,4 @@
+import { item } from '../state/items/itemTypes';
 import { pokemon } from '../state/pokemon/pokemonTypes';
 
 class PokeAPIHelper {
@@ -15,6 +16,18 @@ class PokeAPIHelper {
       maxExp: data.base_experience,
     };
   };
+
+  static getItemById = async (id: number): Promise<item> => {
+    const response = await fetch(`https://pokeapi.co/api/v2/item/${id}`);
+    const data = await response.json();
+    return {
+      id,
+      name: data.name,
+      price: data.cost,
+      spriteSrc: data.sprites.default,
+      quantity: 0,
+    };
+  }
 }
 
 export default PokeAPIHelper;
