@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useAuth } from '../../Contexts/AuthContext';
-import { addTask } from '../../state/tasks/taskActions';
 import { task } from '../../state/tasks/taskTypes';
 import useDatabaseHelper from '../../helpers/useDatabaseHelper';
+import { setDoc } from 'firebase/firestore';
 
 const AddTaskInput: React.FC = () => {
   const { currentUser } = useAuth();
@@ -14,8 +14,8 @@ const AddTaskInput: React.FC = () => {
   const handleAddTask = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const task: task = { id: `${currentUser?.uid}${Date.now()}`, createdAt: Date.now(), done: false, summary: taskSummary };
-    dispatch(addTask(task));
-    databaseHelper?.tasksCollectionRef.doc(task.id).set(task);
+    // dispatch(addTask(task));
+    setDoc(databaseHelper.taskDocumentRef(task.id), task);
     setTaskSummary('');
   };
 

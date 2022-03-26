@@ -24,6 +24,7 @@ import WelcomeModal from '../../components/WelcomeModal/WelcomeModal';
 import PlayerBanner from '../../components/PlayerBanner/PlayerBanner';
 import ItemTile from '../../components/ItemTile/ItemTile';
 import Modal from '../../components/Modal/Modal';
+import { addDoc, getDoc, getDocs, increment, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
@@ -41,7 +42,7 @@ const HomePage: React.FC = () => {
 
   // Subscribe to user data
   useEffect(() => {
-    const userUnsubscribe = databaseHelper?.usersDocumentRef.onSnapshot((userData) => {
+    const userUnsubscribe = onSnapshot(databaseHelper.usersDocumentRef, (userData) => {
       dispatch(setUserName(userData.data()?.name));
       dispatch(setGold(userData.data()?.gold || 0));
       dispatch(setCurrentPokemon(userData.data()?.currentPokemonId));
@@ -54,7 +55,7 @@ const HomePage: React.FC = () => {
 
   // Subscribe to task data
   useEffect(() => {
-    const tasksUnsubscribe = databaseHelper?.tasksCollectionRef.onSnapshot((tasks) => {
+    const tasksUnsubscribe = onSnapshot(databaseHelper.tasksCollectionRef, (tasks) => {
       setTasksLoading(true);
       dispatch(clearTasks());
       tasks.docs.forEach((task) => {
@@ -69,7 +70,7 @@ const HomePage: React.FC = () => {
 
   // Subscribe to pokemon data
   useEffect(() => {
-    const pokemonsUnsubscribe = databaseHelper?.pokemonsCollectionRef.onSnapshot((pokemons) => {
+    const pokemonsUnsubscribe = onSnapshot(databaseHelper.pokemonsCollectionRef, (pokemons) => {
       if (pokemons.docs.length === 0) {
         openModal(<WelcomeModal />);
       }
@@ -86,7 +87,7 @@ const HomePage: React.FC = () => {
 
   // Subscribe to items data
   useEffect(() => {
-    const itemsUnsubscribe = databaseHelper?.itemsCollectionRef.onSnapshot((items) => {
+    const itemsUnsubscribe = onSnapshot(databaseHelper.itemsCollectionRef, (items) => {
       if (items.docs.length === 0) {
         getAllItems();
       }
@@ -102,9 +103,9 @@ const HomePage: React.FC = () => {
   }, []);
 
   const add500Gold = () => {
-    databaseHelper?.usersDocumentRef.get().then((user) => {
+    getDoc(databaseHelper.usersDocumentRef).then((user) => {
       const currentGold = user.data()?.gold || 0;
-      databaseHelper?.usersDocumentRef.update({ gold: currentGold + 500 });
+      updateDoc(databaseHelper.usersDocumentRef, { gold: currentGold + 500 });
     });
   };
 
@@ -112,7 +113,7 @@ const HomePage: React.FC = () => {
     const pokemonId = Math.ceil(Math.random() * 150) + 1;
     PokeAPIHelper.getPokemonById(pokemonId).then((pokemon) => {
       // dispatch(addPokemon(pokemon));
-      databaseHelper?.pokemonsCollectionRef.add(pokemon);
+      addDoc(databaseHelper.pokemonsCollectionRef, pokemon);
     });
   };
 
@@ -121,29 +122,21 @@ const HomePage: React.FC = () => {
     const itemsIds = [2, 3, 4, 17, 24, 25, 26, 27, 28];
     itemsIds.forEach((id) => {
       PokeAPIHelper.getItemById(id).then((item) => {
-        databaseHelper?.itemsCollectionRef.add(item);
+        addDoc(databaseHelper.itemsCollectionRef, item);
       });
     });
   };
 
   const chooseCurrentPokemon = (id: number) => {
     // dispatch(setCurrentPokemon(id));
-    databaseHelper?.usersDocumentRef.update({ currentPokemonId: id });
+    updateDoc(databaseHelper.usersDocumentRef, { currentPokemonId: id });
   };
 
   const showBuyItemModal = (item: item) => {
     const buyItem = () => {
-      databaseHelper?.itemsCollectionRef
-        .where('id', '==', item.id)
-        .get()
-        .then((items) => {
-          items.docs.forEach((item) => {
-            const currentQuantity = item.data()?.quantity;
-            item.ref.update({ quantity: currentQuantity + 1 });
-          });
-        });
-
-      databaseHelper?.usersDocumentRef.update({ gold: gold - item.price });
+      const itemToUpdateQuery = query(databaseHelper.itemsCollectionRef, where('id', '==', item.id));
+      getDocs(itemToUpdateQuery).then((items) => updateDoc(items.docs[0].ref, { quantity: increment(1) }));
+      updateDoc(databaseHelper.usersDocumentRef, { gold: gold - item.price });
     };
 
     if (item.price > gold) {

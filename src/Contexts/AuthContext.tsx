@@ -1,11 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { auth } from '../firebase';
-import firebase from 'firebase/compat/app';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User, UserCredential } from 'firebase/auth';
 
 interface IAuthContext {
-  currentUser: firebase.User | null;
-  login: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
-  signup: (email: string, password: string) => Promise<firebase.auth.UserCredential>;
+  currentUser: User | null;
+  login: (email: string, password: string) => Promise<UserCredential>;
+  signup: (email: string, password: string) => Promise<UserCredential>;
   logout: () => Promise<void>;
 }
 
@@ -16,15 +16,15 @@ export function useAuth() {
 }
 
 export const AuthProvider: React.FC = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<firebase.User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const signup = (email: string, password: string) => {
-    return auth.createUserWithEmailAndPassword(email, password);
+    return createUserWithEmailAndPassword(auth, email, password);
   };
 
   const login = (email: string, password: string) => {
-    return auth.signInWithEmailAndPassword(email, password);
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = () => {

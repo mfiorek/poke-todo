@@ -1,3 +1,4 @@
+import { deleteDoc, updateDoc } from 'firebase/firestore';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useModal } from '../../Contexts/ModalContext';
@@ -17,16 +18,15 @@ const TaskCard: React.FC<TaskCardProps> = (props) => {
   const { openModal } = useModal();
   const databaseHelper = useDatabaseHelper();
 
-  const handleCheckTask = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheckTask = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(checkTask(id, event.target.checked));
-    const taskPreUpdate = await databaseHelper?.tasksCollectionRef.doc(id).get();
-    databaseHelper?.tasksCollectionRef.doc(id).set({ ...taskPreUpdate?.data(), done: event.target.checked });
+    updateDoc(databaseHelper.taskDocumentRef(id), { done: event.target.checked });
   };
 
   const handleDeleteTask = () => {
     const handleDelete = async () => {
       dispatch(deleteTask(id));
-      databaseHelper?.tasksCollectionRef.doc(id).delete();
+      deleteDoc(databaseHelper.taskDocumentRef(id));
     };
 
     openModal(

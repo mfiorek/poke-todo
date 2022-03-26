@@ -5,6 +5,7 @@ import { useAuth } from '../../Contexts/AuthContext';
 import { withAuthCheck } from '../../components/withAuthCheck/withAuthCheck';
 import Card from '../../components/Card/Card';
 import FormInput from '../../components/FormInput/FormInput';
+import { doc, setDoc } from 'firebase/firestore';
 
 const SignupPage: React.FC = () => {
   const { signup } = useAuth();
@@ -47,7 +48,7 @@ const SignupPage: React.FC = () => {
       setLoaing(true);
       signup(email, password)
         .then((userCredential) => {
-          return database.collection('users').doc(userCredential.user?.uid).set({ name: nick });
+          return setDoc(doc(database, `users/${userCredential.user?.uid}`), { name: nick });
         })
         .then(() => {
           navigate('/');
