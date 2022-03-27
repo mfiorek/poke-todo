@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User, UserC
 
 interface IAuthContext {
   currentUser: User | null;
+  isAdmin: boolean | null;
   login: (email: string, password: string) => Promise<UserCredential>;
   signup: (email: string, password: string) => Promise<UserCredential>;
   logout: () => Promise<void>;
@@ -17,6 +18,7 @@ export function useAuth() {
 
 export const AuthProvider: React.FC = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   const signup = (email: string, password: string) => {
@@ -41,8 +43,20 @@ export const AuthProvider: React.FC = ({ children }) => {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = auth.onIdTokenChanged((user) => {
+      user?.getIdTokenResult().then((token) => {
+        console.log('isAdmin', !!token.claims.isAdmin);
+        setIsAdmin(!!token.claims.isAdmin);
+      });
+    });
+
+    return unsubscribe;
+  }, []);
+
   const value = {
     currentUser,
+    isAdmin,
     login,
     signup,
     logout,

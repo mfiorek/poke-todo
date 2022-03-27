@@ -25,6 +25,7 @@ import PlayerBanner from '../../components/PlayerBanner/PlayerBanner';
 import ItemTile from '../../components/ItemTile/ItemTile';
 import Modal from '../../components/Modal/Modal';
 import { addDoc, getDoc, getDocs, increment, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
+import { useAuth } from '../../Contexts/AuthContext';
 
 const HomePage: React.FC = () => {
   const tasksDone = useSelector<TasksReducerState, task[]>((state) => state.tasks.filter((task) => task.done));
@@ -33,6 +34,7 @@ const HomePage: React.FC = () => {
   const items = useSelector<ItemsReducerState, item[]>((state) => state.items);
   const gold = useSelector<UserReducerState, number>((state) => state.user.gold);
   const dispatch = useDispatch();
+  const auth = useAuth();
   const databaseHelper = useDatabaseHelper();
   const { openModal } = useModal();
   const [userLoading, setUserLoading] = useState(true);
@@ -158,6 +160,25 @@ const HomePage: React.FC = () => {
     }
   };
 
+  const changeAdminStatus = (newAdminStatus: boolean) => {
+    auth.currentUser?.getIdToken().then((token) => {
+      setUserLoading(true);
+      var req = new XMLHttpRequest();
+      req.onload = function () {
+        auth.currentUser?.getIdToken(true).then(() => {
+          setUserLoading(false)
+        });
+      };
+      req.onerror = function () {
+        setUserLoading(false)
+        console.log('Error changing admin status');
+      };
+      req.open('POST', `https://poke-todo.web.app/${newAdminStatus ? 'makeAdmin' : 'removeAdmin'}`, true);
+      req.setRequestHeader('Authorization', 'Bearer ' + token);
+      req.send();
+    });
+  };
+
   if (userLoading || tasksLoading || pokemonsLoading || itemsLoading) {
     return <Loader />;
   }
@@ -221,6 +242,7 @@ const HomePage: React.FC = () => {
       </div>
       <button onClick={addRandomPokemon}>Add random Pokemon</button>
       <button onClick={add500Gold}>Add 500 gold</button>
+      <button onClick={() => changeAdminStatus(!auth.isAdmin)}>{auth.isAdmin ? 'Remove admin' : 'Make admin'}</button>
       <Footer />
     </div>
   );
