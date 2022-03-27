@@ -1,30 +1,40 @@
+import { collection, doc } from 'firebase/firestore';
 import { useAuth } from '../Contexts/AuthContext';
 import { database } from '../firebase';
 
 const usersDocumentRef = (userUid: string) => {
-  return database.collection('users').doc(userUid);
+  return doc(database, `users/${userUid}`);
 };
 
 const tasksCollectionRef = (userUid: string) => {
-  return database.collection('users').doc(userUid).collection('tasks');
+  return collection(database, `users/${userUid}/tasks`);
+};
+
+const taskDocumentRef = (userUid: string, taskId: string) => {
+  return doc(database, `users/${userUid}/tasks/${taskId}`);
 };
 
 const pokemonsCollectionRef = (userUid: string) => {
-  return database.collection('users').doc(userUid).collection('pokemons');
+  return collection(database, `users/${userUid}/pokemons`);
 };
 
 const itemsCollectionRef = (userUid: string) => {
-  return database.collection('users').doc(userUid).collection('items');
+  return collection(database, `users/${userUid}/items`);
+};
+
+const itemDocumentRef = (userUid: string, itemId: number) => {
+  return doc(database, `users/${userUid}/items/${itemId}`);
 };
 
 export default function useDatabaseHelper() {
   const { currentUser } = useAuth();
-  if (currentUser?.uid) {
-    return {
-      usersDocumentRef: usersDocumentRef(currentUser?.uid),
-      tasksCollectionRef: tasksCollectionRef(currentUser?.uid),
-      pokemonsCollectionRef: pokemonsCollectionRef(currentUser?.uid),
-      itemsCollectionRef: itemsCollectionRef(currentUser?.uid),
-    };
-  }
-};
+  const userId = currentUser?.uid || '';
+  return {
+    usersDocumentRef: usersDocumentRef(userId),
+    tasksCollectionRef: tasksCollectionRef(userId),
+    taskDocumentRef: (taskId: string) => taskDocumentRef(userId, taskId),
+    pokemonsCollectionRef: pokemonsCollectionRef(userId),
+    itemsCollectionRef: itemsCollectionRef(userId),
+    itemDocumentRef: (itemId: number) => itemDocumentRef(userId, itemId),
+  };
+}

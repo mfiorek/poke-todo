@@ -1,3 +1,4 @@
+import { addDoc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PokeAPIHelper from '../../helpers/PokeapiHelper';
@@ -32,8 +33,8 @@ const WelcomeModal: React.FC = () => {
 
   const addSelectedPokemon = () => {
     if (!!selectedPokemon) {
-      databaseHelper?.pokemonsCollectionRef.add(selectedPokemon);
-      databaseHelper?.usersDocumentRef.update({ currentPokemonId: selectedPokemon.id });
+      addDoc(databaseHelper.pokemonsCollectionRef, selectedPokemon);
+      updateDoc(databaseHelper.usersDocumentRef, { currentPokemonId: selectedPokemon.id });
     }
   };
 
